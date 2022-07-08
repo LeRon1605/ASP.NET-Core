@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -7,12 +8,8 @@ using System.Threading.Tasks;
 
 namespace FirstProject_MVC.Models.Entity
 {
-    public class User: IEntity
+    public class User: IdentityUser
     {
-        [Key]
-        [ForeignKey("Account")]
-        public int ID { get; set; }
-        public string Name { get; set; }
-        public virtual Account Account { get; set; }
+
     }
 }

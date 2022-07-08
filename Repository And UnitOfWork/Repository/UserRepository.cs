@@ -13,10 +13,5 @@ namespace FirstProject_MVC.Repository
         {
 
         }   
-
-        public List<User> GetLasted()
-        {
-            return context.Users.ToList();
-        }
     }
 }

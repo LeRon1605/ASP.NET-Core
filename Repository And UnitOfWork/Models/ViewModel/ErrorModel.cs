@@ -1,8 +1,8 @@
 using System;
 
-namespace FirstProject_MVC.Models
+namespace Repository_And_UnitOfWork.Models.ViewModel
 {
-    public class ErrorViewModel
+    public class ErrorModel
     {
         public string RequestId { get; set; }
 
