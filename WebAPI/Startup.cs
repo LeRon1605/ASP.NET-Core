@@ -37,7 +37,8 @@ namespace WebAPI
             });
 
             services.AddScoped<IUserRepository, UserRepository>();
-
+            services.AddScoped<ICourseRepository, CourseRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddSwaggerGen();
         }
 

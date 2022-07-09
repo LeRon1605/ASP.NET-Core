@@ -7,7 +7,11 @@ using System.Threading.Tasks;
 
 namespace FirstProject_MVC.Repository
 {
-    public class AccountRepository: RepositoryBase<Account>
+    public interface IAccountRepository: IRepository<Account>
+    {
+
+    }
+    public class AccountRepository: RepositoryBase<Account>, IAccountRepository
     {
         public AccountRepository(Entities context): base(context)
         {

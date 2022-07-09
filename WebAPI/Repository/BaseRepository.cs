@@ -17,7 +17,6 @@ namespace WebAPI.Repository
         public void Add(T entity)
         {
             _context.Add(entity);
-            _context.SaveChanges();
         }
 
         public void Delete(string ID)
@@ -26,7 +25,6 @@ namespace WebAPI.Repository
             if (entity != null)
             {
                 _context.Set<T>().Remove(entity);
-                _context.SaveChanges();
             }    
         }
 
@@ -48,7 +46,6 @@ namespace WebAPI.Repository
         public void Update(T entity)
         {
             _context.Attach(entity);
-            _context.SaveChanges();
         }
     }
 }

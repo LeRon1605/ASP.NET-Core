@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace FirstProject_MVC.Repository
 {
-    public class UnitOfWork
+    public interface IUnitOfWork
     {
-        public UserRepository UserRepository { get; set; }
-        public AccountRepository AccountRepository { get; set; }
+        void Complete();
+    }
+    public class UnitOfWork: IUnitOfWork
+    {
         public Entities context { get; set; }
         public UnitOfWork(Entities _context)
         {
             context = _context;
-            UserRepository = new UserRepository(context);
-            AccountRepository = new AccountRepository(context);
         }
 
         public void Complete()

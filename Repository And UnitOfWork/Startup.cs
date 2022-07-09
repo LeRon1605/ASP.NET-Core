@@ -95,8 +95,9 @@ namespace FirstProject_MVC
             });
 
             services.AddSingleton<IdentityErrorDescriber, IdentityErrorCustom>();
-            services.AddTransient<Entities, Entities>();
-            services.AddTransient<UnitOfWork, UnitOfWork>();
+            services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<IAccountRepository, AccountRepository>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IEmailSender, Mail>();
         }
 

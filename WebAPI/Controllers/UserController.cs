@@ -15,18 +15,20 @@ namespace WebAPI.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly DemoDbContext _context;
         private readonly IUserRepository _userRepository;
-        public UserController(DemoDbContext context, IUserRepository userRepository)
+        private readonly ICourseRepository _courseRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        public UserController(IUserRepository userRepository, ICourseRepository courseRepository, IUnitOfWork unitOfWork)
         {
-            _context = context;
             _userRepository = userRepository;
+            _courseRepository = courseRepository;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(string keyword = "", int page = 1)
         {
-            return Ok(_userRepository.findAll().ToList());
+            return Ok(_userRepository.GetPage(page, 5, keyword));
         }
 
         [HttpGet("{ID}")]
@@ -44,7 +46,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(UserVM user)
+        public IActionResult Create(User user)
         {
             User newUser = new User
             {
@@ -58,6 +60,7 @@ namespace WebAPI.Controllers
             try
             {
                 _userRepository.Add(newUser);
+                _unitOfWork.Commit();
                 return StatusCode(201);
             }
             catch
@@ -79,6 +82,7 @@ namespace WebAPI.Controllers
                     user.Email = user.Email;
                     user.CourseID = user.CourseID;
                     _userRepository.Update(user);
+                    _unitOfWork.Commit();
                     return Ok();
                 }
                 catch
@@ -101,6 +105,7 @@ namespace WebAPI.Controllers
                 try
                 {
                     _userRepository.Delete(ID);
+                    _unitOfWork.Commit();
                     return Ok();
                 }
                 catch
@@ -113,5 +118,34 @@ namespace WebAPI.Controllers
                 return NotFound();
             }
         }
+
+
+        [HttpPost("{ID}/Course")]
+        public IActionResult Register(string ID, string CourseID)
+        {
+            User user = _userRepository.findByID(ID);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+            Course course = _courseRepository.findByID(CourseID);
+            if (course == null)
+            {
+                return NotFound("Course not found");
+            }
+            user.Course = course;
+            try
+            {
+                _userRepository.Update(user);
+                _unitOfWork.Commit();
+                return Ok();
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
     }
 }
