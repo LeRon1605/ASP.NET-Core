@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WebAPI.Models.Data;
+using WebAPI.Repository;
 
 namespace WebAPI
 {
@@ -27,6 +30,13 @@ namespace WebAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddDbContext<DemoDbContext>(option =>
+            {
+                option.UseSqlServer(Configuration.GetConnectionString("Demo"));
+            });
+
+            services.AddScoped<IUserRepository, UserRepository>();
 
             services.AddSwaggerGen();
         }
