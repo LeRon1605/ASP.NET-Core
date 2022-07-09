@@ -49,8 +49,9 @@ namespace Repository_And_UnitOfWork.Utils
                 };
                 await client.SendMailAsync(message);
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine(e);
             }
         }
     }

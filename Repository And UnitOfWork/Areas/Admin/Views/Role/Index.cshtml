@@ -1,0 +1,23 @@
+﻿@using Microsoft.AspNetCore.Identity;
+Danh sách các Role
+<a asp-action="Add" asp-controller="Role" asp-area="Admin" class="btn btn-primary">Tạo mới</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Tên Role</th>
+            <th scope="col">Tác vụ</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (IdentityRole role in ViewBag.Roles)
+        {
+            <tr>
+                <th scope="row">@role.Name</th>
+                <td>
+                    <a asp-action="Update" asp-route-id="@role.Id" asp-controller="Role" asp-area="Admin">Cập nhật</a>
+                    <a asp-action="Delete" asp-route-id="@role.Id" asp-controller="Role" asp-area="Admin">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -111,14 +111,25 @@ namespace FirstProject_MVC.Controllers
             else
             {
                 User user = await userManager.FindByEmailAsync(input.Email);
-                if (user != null && await userManager.CheckPasswordAsync(user, input.Password))
+                if (user != null)
                 {
-                    await signInManager.SignInAsync(user, true);
-                    return RedirectToAction("Index");
+                    var result = await signInManager.PasswordSignInAsync(user, input.Password, false, true);
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        if (result.IsLockedOut)
+                        {
+                            ModelState.AddModelError("", "Tài khoản đã bị khóa");
+                        }
+                        return RedirectToAction("Login");
+                    }
                 }
                 else
                 {
-                    ViewBag.Message = "Lỗi đăng nhập";
+                    ModelState.AddModelError("", "Tài khoản hoặc mật khẩu không đúng");
                     return RedirectToAction("Login");
                 }   
             }
@@ -130,6 +141,44 @@ namespace FirstProject_MVC.Controllers
             {
                 await signInManager.SignOutAsync();
             }    
+            return RedirectToAction("Index");
+        }
+        [HttpGet]
+        public IActionResult ForgetPassword()
+        {
+            if (!signInManager.IsSignedIn(User))
+            {
+                return View();
+            }
+            return RedirectToAction("Index");
+        }
+        [HttpPost]
+        public async Task<IActionResult> ForgetPassword(string Email)
+        {
+            User user = await userManager.FindByEmailAsync(Email);
+            if (user != null)
+            {
+                string code = await userManager.GeneratePasswordResetTokenAsync(user);
+                string callbackUrl = Url.ActionLink("ResetPassword", "Home", new { userId = user.Id, code = code }, Request.Scheme, Request.Host.ToString());
+                await mail.SendEmailAsync(Email, "Đặt lại mật khẩu", $"Đặt lại mật khẩu bằng cách <a href='{callbackUrl}'>Bấm vào đây</a>.");
+            }
+            return RedirectToAction("Index");
+        }
+        [HttpGet]
+        public IActionResult ResetPassword(string userId, string code)
+        {
+            if (userId == null || code == null) return RedirectToAction("Index");
+            ViewBag.UserID = userId;
+            ViewBag.Code = code;
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordModel input)
+        {
+            User user = await userManager.FindByIdAsync(input.UserID);
+            if (user == null) return NotFound();
+            await userManager.ResetPasswordAsync(user, input.Code, input.Password);
             return RedirectToAction("Index");
         }
     }

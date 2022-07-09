@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -30,18 +31,22 @@ namespace FirstProject_MVC
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-
+            services.AddDbContext<Entities>(options => {
+                options.UseSqlServer(Configuration.GetConnectionString("FirstProject"));
+            });
             services.AddOptions();                                        // Kích hoạt Options
             var mailsettings = Configuration.GetSection("MailSetting");  // đọc config
             services.Configure<MailSetting>(mailsettings);
 
-            //services.AddIdentity<User, IdentityRole>()
+            services.AddIdentity<User, IdentityRole>()
+                    .AddEntityFrameworkStores<Entities>()
+                    .AddDefaultTokenProviders();
+
+            //services.AddDefaultIdentity<User>()
             //        .AddEntityFrameworkStores<Entities>()
             //        .AddDefaultTokenProviders();
 
-            services.AddDefaultIdentity<User>()
-                    .AddEntityFrameworkStores<Entities>()
-                    .AddDefaultTokenProviders();
+
 
             // Truy cập IdentityOptions
             services.Configure<IdentityOptions>(options => {
@@ -69,6 +74,19 @@ namespace FirstProject_MVC
 
             });
 
+            services.AddAuthentication().AddGoogle(googleOptions =>
+            {
+                // Đọc thông tin Authentication:Google từ appsettings.json
+                IConfigurationSection googleAuthNSection = Configuration.GetSection("Authentication:Google");
+
+                // Thiết lập ClientID và ClientSecret để truy cập API google
+                googleOptions.ClientId = googleAuthNSection["ClientId"];
+                googleOptions.ClientSecret = googleAuthNSection["ClientSecret"];
+                // Cấu hình Url callback lại từ Google (không thiết lập thì mặc định là /signin-google)
+                googleOptions.CallbackPath = "/login/google";
+
+            });
+
             services.ConfigureApplicationCookie(option =>
             {
                 option.LoginPath = "/Identity/Account/Login";
@@ -76,6 +94,7 @@ namespace FirstProject_MVC
                 option.AccessDeniedPath = "/Identity/Account/AccessDenied";
             });
 
+            services.AddSingleton<IdentityErrorDescriber, IdentityErrorCustom>();
             services.AddTransient<Entities, Entities>();
             services.AddTransient<UnitOfWork, UnitOfWork>();
             services.AddTransient<IEmailSender, Mail>();
@@ -103,7 +122,7 @@ namespace FirstProject_MVC
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
+                //endpoints.MapRazorPages();
                 endpoints.MapControllerRoute("areas", "{area:exists}/{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute(
                     name: "default",

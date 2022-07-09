@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model IdentityRole
+
+<div asp-validation-summary="All" class="text-danger"></div>
+<form asp-action="Update" asp-controller="Role" asp-area="Admin" method="POST">
+    <input asp-for="Id" class="d-none"/>
+    <div class="mb-3">
+        <label class="form-label">Tên phân quyền</label>
+        <input asp-for="Name">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
