@@ -13,7 +13,18 @@ namespace WebAPI.Models.Data
         public DemoDbContext(DbContextOptions options): base(options)
         {
 
-        }    
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>()
+                        .HasOne(user => user.Course)
+                        .WithMany(course => course.Users)
+                        .HasForeignKey(user => user.CourseID)
+                        .OnDelete(DeleteBehavior.SetNull);
+        }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Course> Courses { get; set; }

@@ -20,6 +20,7 @@ namespace WebAPI.Controllers
         private readonly IUnitOfWork _unitOfWork;
         public UserController(IUserRepository userRepository, ICourseRepository courseRepository, IUnitOfWork unitOfWork)
         {
+            // Dependency injection scoped -> using the same context for all repository and unit of work
             _userRepository = userRepository;
             _courseRepository = courseRepository;
             _unitOfWork = unitOfWork;
@@ -143,6 +144,43 @@ namespace WebAPI.Controllers
             catch
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpDelete("{ID}/Course")]
+        public ActionResult Drop(string ID)
+        {
+            User user = _userRepository.findByID(ID);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+            Course course = _userRepository.GetCourseOfUser(ID);
+            if (course == null)
+            {
+                return NotFound(new 
+                { 
+                    status = false, 
+                    message = "User has not registered to any course yet"
+                });
+            }
+            else
+            {
+                user.Course = null;
+                try
+                {
+                    _userRepository.Update(user);
+                    _unitOfWork.Commit();
+                    return Ok(new
+                    {
+                        status = true,
+                        message = "Drop Course Successfully"
+                    });
+                }
+                catch
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+                }
             }
         }
 

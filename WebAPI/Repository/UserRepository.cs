@@ -12,12 +12,18 @@ namespace WebAPI.Repository
     public interface IUserRepository: IRepository<User>
     {
         public PagingList<UserVM> GetPage(int page, int pageSize, string keyword);
+        public Course GetCourseOfUser(string ID);
     }
     public class UserRepository: BaseRepository<User>, IUserRepository
     {
         public UserRepository(DemoDbContext context): base(context)
         {
 
+        }
+
+        public Course GetCourseOfUser(string ID)
+        {
+            return _context.Users.Include(user => user.Course).FirstOrDefault(user => user.ID == ID).Course;
         }
 
         public PagingList<UserVM> GetPage(int page, int pageSize, string keyword)
