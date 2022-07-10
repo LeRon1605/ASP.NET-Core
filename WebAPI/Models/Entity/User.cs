@@ -21,6 +21,8 @@ namespace WebAPI.Models.Entity
         [Required(ErrorMessage = "Mật khẩu không được để trống")]
         public string Password { get; set; }
         public string CourseID { get; set; }
+        public string RoleID { get; set; }
         public virtual Course Course { get; set; }
+        public virtual Role Role { get; set; }
     }
 }

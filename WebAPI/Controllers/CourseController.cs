@@ -10,7 +10,7 @@ using WebAPI.Repository;
 
 namespace WebAPI.Controllers
 {
-    [Route("[controller]")]
+    [Route("courses")]
     [ApiController]
     public class CourseController : ControllerBase
     {

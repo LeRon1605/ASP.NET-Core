@@ -12,6 +12,7 @@ namespace WebAPI.Repository
     public interface IUserRepository: IRepository<User>
     {
         public PagingList<UserVM> GetPage(int page, int pageSize, string keyword);
+        public User GetByEmail(string Email);
         public Course GetCourseOfUser(string ID);
     }
     public class UserRepository: BaseRepository<User>, IUserRepository
@@ -19,6 +20,11 @@ namespace WebAPI.Repository
         public UserRepository(DemoDbContext context): base(context)
         {
 
+        }
+
+        public User GetByEmail(string Email)
+        {
+            return _context.Users.FirstOrDefault(user => user.Email == Email);
         }
 
         public Course GetCourseOfUser(string ID)

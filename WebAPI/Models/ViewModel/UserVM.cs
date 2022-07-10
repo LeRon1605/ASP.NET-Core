@@ -16,7 +16,14 @@ namespace WebAPI.Models.ViewModel
         [EmailAddress(ErrorMessage = "Địa chỉ Email không hợp lệ")]
         [Required(ErrorMessage = "Email không được để trống")]
         public string Email { get; set; }
+        public string Password { get; set; }
         public string CourseID { get; set; }
         public string Course { get; set; }
+    }
+
+    public class LoginVM
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
     }
 }

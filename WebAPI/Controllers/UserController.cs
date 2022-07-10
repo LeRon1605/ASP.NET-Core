@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WebAPI.Helper;
 using WebAPI.Models.Data;
 using WebAPI.Models.Entity;
 using WebAPI.Models.ViewModel;
@@ -11,22 +13,25 @@ using WebAPI.Repository;
 
 namespace WebAPI.Controllers
 {
-    [Route("[controller]")]
+    [Route("users")]
     [ApiController]
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
         private readonly ICourseRepository _courseRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public UserController(IUserRepository userRepository, ICourseRepository courseRepository, IUnitOfWork unitOfWork)
+        private readonly ITokenProvider _tokenProvider;
+        public UserController(IUserRepository userRepository, ICourseRepository courseRepository, IUnitOfWork unitOfWork, ITokenProvider tokenProvider)
         {
             // Dependency injection scoped -> using the same context for all repository and unit of work
             _userRepository = userRepository;
             _courseRepository = courseRepository;
             _unitOfWork = unitOfWork;
+            _tokenProvider = tokenProvider;
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult GetAll(string keyword = "", int page = 1)
         {
             return Ok(_userRepository.GetPage(page, 5, keyword));
@@ -121,7 +126,7 @@ namespace WebAPI.Controllers
         }
 
 
-        [HttpPost("{ID}/Course")]
+        [HttpPost("{ID}/course")]
         public IActionResult Register(string ID, string CourseID)
         {
             User user = _userRepository.findByID(ID);
@@ -147,7 +152,7 @@ namespace WebAPI.Controllers
             }
         }
 
-        [HttpDelete("{ID}/Course")]
+        [HttpDelete("{ID}/course")]
         public ActionResult Drop(string ID)
         {
             User user = _userRepository.findByID(ID);
@@ -180,6 +185,41 @@ namespace WebAPI.Controllers
                 catch
                 {
                     return StatusCode(StatusCodes.Status500InternalServerError);
+                }
+            }
+        }
+
+        [HttpPost("login")]
+        public IActionResult Login(LoginVM input)
+        {
+            User user = _userRepository.GetByEmail(input.Email);
+            if (user == null)
+            {
+                return NotFound(new
+                {
+                    status = false,
+                    message = "Tài khoản không tồn tại"
+                });
+            }
+            else
+            {
+                if (user.Password != input.Password)
+                {
+                    return NotFound(new
+                    {
+                        status = false,
+                        message = "Mật khẩu không đúng"
+                    });
+                }
+                else
+                {
+                    // Cấp Token
+                    return Ok(new
+                    {
+                        status = true,
+                        message = "Login successfully",
+                        token = _tokenProvider.GenerateToken(user)
+                });
                 }
             }
         }
