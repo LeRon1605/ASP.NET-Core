@@ -26,16 +26,28 @@ namespace WebAPI.Helper
         {
             JwtSecurityTokenHandler jwtTokenHandler = new JwtSecurityTokenHandler();
             var secretKeyBytes = Encoding.UTF8.GetBytes(_configuration["JWT:Key"]);
-            var tokenDescription = new SecurityTokenDescriptor
-            {
-                Subject = new System.Security.Claims.ClaimsIdentity(new Claim[]
-                {
-                    new Claim("ID", user.ID)
-                }),
-                Expires = DateTime.Now.AddMinutes(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyBytes), SecurityAlgorithms.HmacSha256)
-            };
-            return jwtTokenHandler.WriteToken(jwtTokenHandler.CreateToken(tokenDescription));
+            //var tokenDescription = new SecurityTokenDescriptor
+            //{
+            //    Subject = new System.Security.Claims.ClaimsIdentity(new Claim[]
+            //    {
+            //        new Claim("ID", user.ID),
+            //        new Claim("role", "Admin")
+            //    }),
+            //    Expires = DateTime.UtcNow.AddMinutes(1),
+            //    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyBytes), SecurityAlgorithms.HmacSha256)
+            //};
+            var token = new JwtSecurityToken(
+              null,
+              null,
+              new Claim[]
+              {
+                    new Claim("ID", user.ID),
+                    new Claim("role", "Admin")
+              },
+              expires: DateTime.Now.AddMinutes(30),
+              signingCredentials: new SigningCredentials(new SymmetricSecurityKey(secretKeyBytes), SecurityAlgorithms.HmacSha256)
+            );
+            return jwtTokenHandler.WriteToken(token);
         }
     }
 }

@@ -35,6 +35,13 @@ namespace WebAPI
         {
             services.AddControllers();
 
+            services.AddResponseCompression();
+            // Config cors
+            services.AddCors(option =>
+            {
+                option.AddPolicy("PolicyCors", x => x.WithOrigins("http://localhost:3000"));
+            });
+
             services.AddDbContext<DemoDbContext>(option =>
             {
                 option.UseSqlServer(Configuration.GetConnectionString("Demo"));
@@ -51,7 +58,13 @@ namespace WebAPI
 
                             // Ky? va?o token
                             ValidateIssuerSigningKey = true,
-                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Key"]))
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Key"])),
+                            
+                            // Expire time
+                            ValidateLifetime = true,
+                            ClockSkew = TimeSpan.Zero
+                            // Fetch the role to authorize in payload
+                            // RoleClaimType = "Role",
                         };
                     });
 
@@ -78,13 +91,16 @@ namespace WebAPI
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Employee API V1");
             });
 
+            // Using cors with policy below
+            app.UseCors("PolicyCors");
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseResponseCompression();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

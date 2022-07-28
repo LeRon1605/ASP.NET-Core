@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using WebAPI.Helper;
 using WebAPI.Models.Data;
@@ -20,58 +21,41 @@ namespace WebAPI.Controllers
         private readonly IUserRepository _userRepository;
         private readonly ICourseRepository _courseRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ITokenProvider _tokenProvider;
         public UserController(IUserRepository userRepository, ICourseRepository courseRepository, IUnitOfWork unitOfWork, ITokenProvider tokenProvider)
         {
             // Dependency injection scoped -> using the same context for all repository and unit of work
             _userRepository = userRepository;
             _courseRepository = courseRepository;
             _unitOfWork = unitOfWork;
-            _tokenProvider = tokenProvider;
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetAll(string keyword = "", int page = 1)
         {
             return Ok(_userRepository.GetPage(page, 5, keyword));
         }
 
         [HttpGet("{ID}")]
+        [Authorize]
         public IActionResult GetByID(string ID)
         {
-            User user = _userRepository.findByID(ID);
-            if (user != null)
+            string userID = User.Claims.First(i => i.Type == "ID").Value;
+            if (ID == userID)
             {
-                return Ok(user);
+                User user = _userRepository.findByID(ID);
+                if (user != null)
+                {
+                    return Ok(user);
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
             else
             {
-                return NotFound();
-            }
-        }
-
-        [HttpPost]
-        public IActionResult Create(User user)
-        {
-            User newUser = new User
-            {
-                ID = Guid.NewGuid().ToString(),
-                Name = user.Name,
-                Address = user.Address,
-                Email = user.Email,
-                Password = user.Password,
-                CourseID = user.CourseID
-            };
-            try
-            {
-                _userRepository.Add(newUser);
-                _unitOfWork.Commit();
-                return StatusCode(201);
-            }
-            catch
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return Forbid();
             }
         }
 
@@ -188,42 +172,5 @@ namespace WebAPI.Controllers
                 }
             }
         }
-
-        [HttpPost("login")]
-        public IActionResult Login(LoginVM input)
-        {
-            User user = _userRepository.GetByEmail(input.Email);
-            if (user == null)
-            {
-                return NotFound(new
-                {
-                    status = false,
-                    message = "Tài khoản không tồn tại"
-                });
-            }
-            else
-            {
-                if (user.Password != input.Password)
-                {
-                    return NotFound(new
-                    {
-                        status = false,
-                        message = "Mật khẩu không đúng"
-                    });
-                }
-                else
-                {
-                    // Cấp Token
-                    return Ok(new
-                    {
-                        status = true,
-                        message = "Login successfully",
-                        token = _tokenProvider.GenerateToken(user)
-                });
-                }
-            }
-        }
-
-
     }
 }
